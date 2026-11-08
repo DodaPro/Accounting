@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بنك أسئلة المحاسبة الضريبية (ج-و) - المستوى الرابع</title>
+    <script>
+        // Tailwind Config for Dark Mode
+        tailwind = {
+            config: {
+                darkMode: 'class',
+                theme: { extend: {} }
+            }
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .smooth-transition { transition: all 0.3s ease-in-out; }
+        
+        /* Table Styling matching the PDF */
+        .tax-table { width: 100%; border-collapse: collapse; margin-top: 1rem; margin-bottom: 1rem; }
+        .tax-table th, .tax-table td { border: 1px solid #d1d5db; padding: 0.75rem; text-align: right; }
+        .dark .tax-table th, .dark .tax-table td { border-color: #4b5563; }
+        
+        .tax-table th { background-color: #e5e7eb; font-weight: 700; color: #1f2937; }
+        .dark .tax-table th { background-color: #374151; color: #e5e7eb; }
+        
+        .tax-table tr:nth-child(even) { background-color: #f9fafb; }
+        .dark .tax-table tr:nth-child(even) { background-color: #1f2937; }
+        
+        .tax-table tr:hover { background-color: #f3f4f6; }
+        .dark .tax-table tr:hover { background-color: #374151; }
+
+        .tax-table .total-row td { background-color: #e0e7ff; font-weight: bold; color: #312e81; }
+        .dark .tax-table .total-row td { background-color: #312e81; color: #e0e7ff; }
+
+        /* PDF Matching Table Styles */
+        .pdf-table { width: 100%; border: 1.5px solid #000; border-collapse: collapse; background: #fff; color: #000; direction: rtl; margin-bottom: 1.5rem; font-weight: 600; font-size: 0.95rem; }
+        .pdf-table td { padding: 8px 12px; vertical-align: middle; }
+        .pdf-table .col-text { text-align: right; border-left: 1.5px solid #000; width: 60%; }
+        .pdf-table .col-sub { text-align: center; border-left: 1.5px solid #000; width: 20%; }
+        .pdf-table .col-tot { text-align: center; width: 20%; }
+        .pdf-table .border-top { border-top: 1.5px solid #000; }
+        .pdf-table .underline-title { text-decoration: underline; font-weight: 800; }
+        .dark .pdf-table { border-color: #9ca3af; background: #1f2937; color: #f9fafb; }
+        .dark .pdf-table .col-text, .dark .pdf-table .col-sub, .dark .pdf-table .border-top { border-color: #9ca3af; }
+
+        /* Hide scrollbar for clean UI but keep functionality */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 antialiased smooth-transition">
+
+    <!-- Header with Dark Mode Toggle -->
+    <header class="bg-indigo-900 dark:bg-indigo-950 text-white sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-sm sm:text-lg font-bold truncate pr-2">
+                <i class="fa-solid fa-file-invoice-dollar ml-2"></i>محاسبة ضريبية (ج-و) - د/ مصطفى محمود
+            </h1>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-indigo-800 dark:hover:bg-indigo-900 smooth-transition text-yellow-300">
+                    <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+                <div class="bg-indigo-800 dark:bg-indigo-900 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border border-indigo-700 dark:border-indigo-800 whitespace-nowrap">
+                    النتيجة: <span id="score-display" class="text-yellow-400 font-bold">0</span> / <span id="total-display">50</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-2 sm:px-4 py-6 max-w-5xl">
+        
+        <!-- Tabs -->
+        <div class="flex flex-wrap sm:flex-nowrap gap-2 mb-6 bg-white dark:bg-gray-800 p-2 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <button onclick="switchTab('mcq')" id="tab-mcq" class="flex-1 py-2 px-4 rounded-lg bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 font-bold smooth-transition text-sm sm:text-base">
+                <i class="fa-solid fa-list-check ml-1"></i> القسم الاختياري (50)
+            </button>
+            <button onclick="switchTab('essay')" id="tab-essay" class="flex-1 py-2 px-4 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 font-bold smooth-transition text-sm sm:text-base">
+                <i class="fa-solid fa-pen-to-square ml-1"></i> القسم المقالي (7)
+            </button>
+            <button onclick="switchTab('laws')" id="tab-laws" class="flex-1 py-2 px-4 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 font-bold smooth-transition text-sm sm:text-base">
+                <i class="fa-solid fa-scale-balanced ml-1"></i> مرجع القوانين
+            </button>
+        </div>
+
+        <!-- MCQ Section -->
+        <section id="mcq-section" class="space-y-6 block">
+            <div class="bg-blue-50 dark:bg-blue-900/30 border-r-4 border-blue-500 p-4 rounded-lg mb-6 text-sm sm:text-base text-blue-800 dark:text-blue-200 font-semibold shadow-sm">
+                <i class="fa-solid fa-circle-info ml-2"></i> هذا القسم يحتوي على 50 سؤال اختيار من متعدد مطابقة للبنك.
+            </div>
+            <div id="mcq-container" class="space-y-6"></div>
+        </section>
+
+        <!-- Essay Section -->
+        <section id="essay-section" class="space-y-8 hidden">
+            <div class="bg-amber-50 dark:bg-amber-900/30 border-r-4 border-amber-500 p-4 rounded-lg mb-6 text-sm sm:text-base text-amber-800 dark:text-amber-200 font-semibold shadow-sm">
+                <i class="fa-solid fa-lightbulb ml-2"></i> التمارين المقالية الـ 7 مطابقة لنماذج الحل في البنك بالضبط.
+            </div>
+            <div id="essay-container" class="space-y-8"></div>
+        </section>
+
+        <!-- Laws Reference Section -->
+        <section id="laws-section" class="space-y-6 hidden">
+            <div class="bg-emerald-50 dark:bg-emerald-900/30 border-r-4 border-emerald-500 p-4 rounded-lg mb-6 text-sm sm:text-base text-emerald-800 dark:text-emerald-200 font-semibold shadow-sm">
+                <i class="fa-solid fa-book ml-2"></i> هذا القسم يعتبر مرجعاً شاملاً لكافة قوانين المحاسبة الضريبية المذكورة في المحاضرات، مع مثال تطبيقي لكل قانون لسهولة التذكر.
+            </div>
+            <div id="laws-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </section>
+
+    </main>
+
+    <!-- Supplication Modal (الدعاء) -->
+    <div id="prayer-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/60 backdrop-blur-sm smooth-transition opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-sm sm:max-w-md w-11/12 text-center transform scale-95 transition-transform duration-300 relative border-t-4 border-indigo-500">
+            <div class="text-indigo-600 dark:text-indigo-400 text-5xl mb-4 animate-bounce">
+                <i class="fa-solid fa-hands-praying"></i>
+            </div>
+            <h3 id="prayer-text" class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 leading-relaxed">
+                <!-- Prayer text goes here -->
+            </h3>
+            <button onclick="closePrayerModal()" class="bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg smooth-transition w-full text-lg border border-indigo-800">
+                آمين يا رب (إتمام)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. MCQ Data (Full 50 Questions from Bank) ---
+        const mcqData = [
+            { id: 1, question: "١ - يعتبر الشخص الطبيعي مقيماً في مصر:", options: ["أ - إذا كان مقيم في مصر لأداء مهام عمله كأحد أعضاء السلك السياسي للأجانب ويحصل على دخله من دولته", "ب - إذا كان مصري مقيم في الخارج ويحصل على دخله من الخارج", "ج - لا شيء مما سبق", "د - كل ما سبق"], correctOption: 2 },
+            { id: 2, question: "٢ - لا يلتزم الشخص الطبيعي بتقديم الإقرار الضريبي في حالة:", options: ["أ - إذا كان اجنبياً وتتجاوز مدة إقامته في مصر ١٨٣ يوم متصلة أو منفصلة خلال العام", "ب - أن يقتصر دخله على المرتبات وما في حكمها ويتجاوز الشريحة المعفاة البالغة ٤٠٠٠٠ ج", "ج - الشخص الطبيعي الذي يقتصر دخله على إيرادات الثروة العقارية، بغض النظر عن مقدار هذا الدخل", "د - لا شيء مما سبق"], correctOption: 3 },
+            { id: 3, question: "٣ - طبيب يعمل كأستاذ جامعي في كلية طب القصر العيني، ويمتلك عيادة بالهرم ومستشفى بالدقي (منشأة فردية)، كان صافي دخله من عمله بالجامعة قبل خصم الشريحة المعفاة من الضريبة ٢٩ ألف جنيه، وبلغ صافي إيراد عيادته الخاصة ١٢٠ ألف جنيه، وكانت نتيجة أعمال المستشفى صافي خسائر بلغت ١٠٠ ألف جنيه، فإن الوعاء الخاضع للضريبة على دخل الأشخاص الطبيعيين لهذا الممول يكون:", options: ["أ - ١٤٢,٥ ألف جنيه وترحل خسائر المستشفى للعام التالي", "ب - ٤٩ ألف جنيه", "ج - ١٥٦ ألف جنيه، وترحل خسائر المستشفى للعام التالي", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 4, question: "٤ - حصل موظف في شهر سبتمبر الماضي على منحة عيد الأضحى بمبلغ ٧٥٠ جنيه، وكذلك على عمولة على مبيعات الشركة ١٥٠٠ جنيه، فيكون المبلغ الخاضع للضريبة:", options: ["أ - ٢٢٥٠ جنيه", "ب - ١٥٠٠ جنيه", "ج - ٧٥٠ جنيه", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 5, question: "٥ - من خصائص الضريبة على دخل الاشخاص الطبيعيين أنها:", options: ["أ - ضريبة عينية", "ب - ضريبة شخصية", "ج - ضريبة غير مباشرة", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 6, question: "٦ - يعتبر الشخص الطبيعي مقيماً في مصر إذا كان:", options: ["أ - مقيم في مصر مدة تزيد عن ١٨٣ يوم منفصلة او متصلة", "ب - مقيم في مصر مدة تقل عن ١٨٣ يوم منفصلة او متصلة", "ج - مقيم في مصر مدة تقل عن ١٨٠ يوم منفصلة او متصلة", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 7, question: "٧ - ممول شخص طبيعي بلغت صافي ايراداته من أنشطته المختلفة عن عام ٢٠٢٥ مبلغ ٢٥٠٠٠٠ جنيه، بناءً على ذلك فإن الضريبة المستحقة على هذا الممول:", options: ["أ - ٤١٠٠٠ جنيه", "ب - ٤٢٠٢٥ جنيه", "ج - ٣٧٤٥٠ جنيه", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 8, question: "٨ - خصصت احدى الشركات سيارة ملكا لها تحت تصرف أحد المديرين وبلغت مصروفات الوقود والصيانة الدورية المتعلقة بهذه السيارة ٦٠ ألف جنيه سنويا هذا مع العلم بأن ثمن شراء تلك السيارة ٥٠٠ ألف جنيه وقسط اهلاكها السنوي ٢٥ %. في هذه الحالة يخضع للضريبة كميزة عينية سنويا:", options: ["أ - ٨٦٠٠٠ ج", "ب - ١٠٦٠٠٠ ج", "ج - ١٢٠٠٠ ج", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 9, question: "٩ - أياً مما يلي ليس من خصائص الضريبة على دخل الاشخاص الطبيعيين أنها:", options: ["أ - ضريبة عينية", "ب - ضريبة شخصية", "ج - ضريبة مباشرة", "د - ضريبة موحدة"], correctOption: 0 },
+            { id: 10, question: "١٠ - حصل أحد العاملين بإحدى شركات القطاع العام على قرض من الشركة قدره ٨٠ ألف جنيه بمعدل فائدة ٤٪ سنوياً، هذا مع العلم أن جملة المبالغ التي حصل عليها العامل من الشركة خلال الستة شهور السابقة على حصوله على القرض كانت ٦٠ ألف جنيه. قيمة الميزة العينية الخاضعة للضريبة على المرتبات:", options: ["أ - ٦٠٠ ج", "ب - لا توجد ميزة خاضعة", "ج - ١٢٠٠٠ ج", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 11, question: "١١ - لا يلتزم الشخص الطبيعي بتقديم الإقرار الضريبي في حالة:", options: ["أ - الشخص الطبيعي الذي يقتصر دخله على النشاط التجاري والصناعي", "ب - الشخص الطبيعي الذي يقتصر دخله على المرتبات وما في حكمها", "ج - الشخص الطبيعي الذي يقتصر دخله على المهن الحرة", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 12, question: "١٢ - مرتبات ومكافآت رؤساء وأعضاء مجالس الإدارة والمديرين في شركات الأموال (قطاع خاص) تخضع للضريبة إذا كانت:", options: ["أ - لا تخضع للضريبة مطلقاً", "ب - ليست مقابل العمل الإداري", "ج - مقابل العمل الإداري", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 13, question: "١٣ - مرتبات ومكافآت رؤساء وأعضاء مجالس الإدارة في شركات القطاع العام تخضع للضريبة:", options: ["أ - إذا دفعت لغير المساهمين", "ب - إذا دفعت للمساهمين", "ج - لا تخضع للضريبة مطلقاً", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 14, question: "١٤ - يخضع للضريبة على المرتبات والأجور وما في حكمها:", options: ["أ - المزايا العينية الجماعية", "ب - الأجر الإضافي وحوافز الإنتاج", "ج - الأرباح الموزعة طبقاً لقانون الشركات", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 15, question: "١٥ - المزايا العينية تخضع للضريبة إذا كانت:", options: ["أ - غير لازمة لأداء العمل", "ب - مجانية (بدون مقابل)", "ج - أ ، ب صحيحتان", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 16, question: "١٦ - السيد عبد العزيز جميعي العضو المنتدب للشركة الوطنية للصناعات (شركة مساهمة مصرية)، ويتقاضى نظير عمله الإداري بها ٢٥ ألف جنيه مرتب شهري، بجانب ٥٠٠٠ جنيه شهرياً بدل تمثيل واستقبال، فإن اجمالي الدخل السنوي الذي يحصل عليه هذا الممول ويخضع للضريبة على دخل الأشخاص الطبيعيين يكون:", options: ["أ - ٥٢٥ ألف جنيه", "ب - ٣٧٥ ألف جنيه", "ج - ٣٦٠ ألف جنيه", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 17, question: "١٧ - ممول يعمل كمهندس لقطع الغيار في شركة المنصور، ويتقاضى شهرياً ٣٠٠٠ جنيه أساسي و١٥٠٠ بدل طبيعة عمل. حصل على سيارة بـ ٨٠ ألف بتسهيلات (دفع النصف نقداً والباقي أقساط بدون فائدة). مقدار الميزة العينية:", options: ["أ - لا توجد ميزة خاضعة", "ب - ٩١٠ جنيه", "ج - ١٥٤٠ جنيه", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 18, question: "١٨ - يحصل موظف شهريا على أساسي ٦٠٠٠، ٣٥٠ علاوة غلاء معيشة، ١٥٠٠ بدل طبيعة عمل، ٢٦٥٠ أجر إضافي، ١٥٠٠ حوافز. اجمالي الأجر الشهري الخاضع:", options: ["أ - ١٦٥٠٠ جنيه", "ب - ١٦٦٥٠ جنيه", "ج - ١٢٠٠٠ جنيه", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 19, question: "١٩ - تسري الضريبة على دخل الأشخاص الطبيعيين على:", options: ["أ - دخل الشخص الطبيعي المقيم والمحقق في مصر والخارج، والدخل المحقق في مصر لغير المقيم", "ب - دخل الشخص الطبيعي المقيم في مصر وفي الخارج", "ج - دخل الشخص غير المقيم المحقق في مصر فقط", "د - أ صحيحة (المقيم بالداخل والخارج، وغير المقيم بالداخل)"], correctOption: 0 },
+            { id: 20, question: "٢٠ - توفر إحدى الشركات لأحد الموظفين مسكن خاص له ولأسرته بمناسبة أدائه لعمله إيجاره الشهري ٣٥٠ جنيه بدون خصم أي مقابل من مرتبه الشهري:", options: ["أ - ٣٥٠ جنيه ميزة عينية خاضعة للضريبة", "ب - ١٧٥ جنيه ميزة عينية خاضعة للضريبة", "ج - لا توجد ميزة خاضعة", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 21, question: "٢١ - حصل موظف في بداية شهر مايو على جهاز تليفون محمول ثمنه ٣٠٠٠٠ جنيه تبلغ تكاليف تشغيله التي تتحملها الشركة شهريا ١٢٥ جنيه. يدخل في حساب الأجر الشهري الخاضع للضريبة:", options: ["أ - ٤٢٥ جنيه", "ب - ٢٥ جنيه", "ج - ١٢٥ جنيه", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 22, question: "٢٢ - تضع شركة تحت التصرف الشخصي لأحد الموظفين سيارة. وقود وصيانة ١٢٥٠ج/شهرياً، قسط التأمين ٢٥٠ج/شهرياً، اصلاح حادث ٨٠٠٠ج، اهلاك ٦٠٠٠ج. يدخل في حساب الأجر الشهري الخاضع:", options: ["أ - ٣١٠٠ جنيه", "ب - ١٩٠٠ جنيه", "ج - ٣٠٠ جنيه", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 23, question: "٢٣ - حصل موظف في نهاية يوليو على قرض ٤٠ ألف جنيه بفائدة ٨٪ سنويا. مجموع ما حصل عليه خلال الشهور الستة السابقة ٣٦ ألف جنيه. يدخل في حساب الأجر السنوي الخاضع للضريبة:", options: ["أ - لا توجد ميزة خاضعة", "ب - ٤٠ جنيه", "ج - ٣٢٠٠ جنيه", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 24, question: "٢٤ - حصل أحد العاملين في أول يوليو ٢٠١٦ على ٢٥٠ سهم مقابل ۲۰۰ جنيه للسهم. سعر السهم في السوق أول يناير ٢١٠ وفي أول يوليو ٢٢٠. يدخل في حساب الأجر السنوي الخاضع:", options: ["أ - ٢٥٠٠ جنيه", "ب - ٣٧٥٠ جنيه", "ج - ٥٠٠٠ جنيه", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 25, question: "٢٥ - يعفى من الضريبة على دخل الأشخاص الطبيعيين المزايا العينية التي يحصل عليها العامل من جهة عمله وذلك في حالة:", options: ["أ - أن تكون الميزة العينية مجانية", "ب - أن تكون الميزة العينية جماعية", "ج - أن تحقق الميزة العينية استفادة شخصية", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 26, question: "٢٦ - حصل عامل على ١٠٠٠ سهم مقابل ٢٠٠ جنيه للسهم، القيمة السوقية تاريخ الحصول ٢٢٠ جنيه. قيمة الميزة العينية الخاضعة:", options: ["أ - ٢٠٠٠٠ ج", "ب - ٢٢٠٠٠ ج", "ج - لا توجد ميزة خاضعة", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 27, question: "٢٧ - دكتور جامعي انتدب للعمل في أحد المعاهد الخاصة نظير مكافأة انتداب ٤٥٠٠ ج، الضريبة على مكافأة الانتداب:", options: ["أ - ٩٠٠ ج", "ب - ٥٠٠ ج", "ج - ٤٥٠ ج", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 28, question: "٢٨ - الممول غير المقيم في مصر يخضع للضريبة دخله:", options: ["أ - المحقق خارج مصر فقط", "ب - المحقق داخل مصر فقط", "ج - المحقق داخل مصر وخارجها", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 29, question: "٢٩ - طبيب يعمل كأستاذ جامعي (مرتب خاضع ٦٠ ألف)، صافي إيراد عيادة ١٤٠ ألف، صافي خسارة مستشفى فردية ١٥٠ ألف. الوعاء الخاضع للضريبة يكون:", options: ["أ - ٦٠ ألف جنيه", "ب - ٥٠ ألف جنيه", "ج - ٣٥٠ ألف جنيه", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 30, question: "٣٠ - من خصائص الضريبة على دخل الاشخاص الطبيعيين أنها:", options: ["أ - ضريبة مباشرة", "ب - ضريبة شخصية", "ج - ضريبة موحدة", "د - كل ما سبق"], correctOption: 3 },
+            { id: 31, question: "٣١ - ممول شخص طبيعي بلغت صافي ايراداته عن عام ٢٠٢٥ مبلغ ٦٥٠٠٠ جنيه، بناءً على ذلك فإن الضريبة المستحقة:", options: ["أ - ٤٠٠٠ جنيه", "ب - ٥٠٠٠ جنيه", "ج - ٣٠٠٠ جنيه", "د - لا شيء مما سبق"], correctOption: 3 }, // الإجابة 40000 معفاة والباقي 25000*10%=2500 (لا شيء مما سبق)
+            { id: 32, question: "٣٢ - مرتبات العاملين المصريين بالسفارات الأجنبية في الخارج تخضع للضريبة لأنها:", options: ["أ - خرجت من خزانة أجنبية", "ب - خرجت من خزانة مصرية", "ج - أ & ب معا", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 33, question: "٣٣ - بدل السفر والانتقال والإقامة والمبيت تخضع للضريبة بشرط:", options: ["أ - أن لا يقابلها مصروفات فعلية", "ب - أن يقابلها مصروفات فعلية", "ج - أن تكون في نهاية العام", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 34, question: "٣٤ - موظف بقناة السويس أساسي ٤٠٠٠، علاوة اجتماعية ٥٠٠، تمثيل واستقبال ٢٥٠، مزايا عينية جماعية ٨٠٠. الإيراد الشهري الخاضع للضريبة:", options: ["أ - ٤٧٥٠ ج", "ب - ٤٥٠٠ ج", "ج - ٥٥٥٠ ج", "د - ٤٢٥٠ ج"], correctOption: 3 }, // اساسي+تمثيل = 4250. العلاوة والمزايا معفاة. د هي الأقرب إذا كانت موجودة، في البنك الحل 4250 غير موجود صراحة كألف ب ج، فـ د (لا شيء) أو 4250
+            { id: 35, question: "٣٥ - المزايا العينية الجماعية التي حصل عليها الموظف بقيمة ٨٠٠ ج شهريا تعتبر:", options: ["أ - خاضعة للضريبة", "ب - غير خاضعة للضريبة", "ج - لا شيء مما سبق", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 36, question: "٣٦ - سفير لمصر في أمريكا، أساسي ٥٠٠٠، علاوة خاصة ٤٠٠، طبيعة عمل ٦٠٠. الايراد الشهري الخاضع للضريبة:", options: ["أ - ٦٠٠٠ ج", "ب - ٥٦٠٠ ج", "ج - ٥٤٠٠ ج", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 37, question: "٣٧ - ممول مصري يتقاضى من شركة ٧٠٠٠ج شهريا. يمتلك محل تجاري حقق خسائر ٥٠ ألف جنيه. اجمالي الايراد السنوي الخاضع:", options: ["أ - ٣٤٠٠٠ ج", "ب - ٨٤٠٠٠ ج", "ج - ١٣٤٠٠٠ ج", "د - لا شيء مما سبق"], correctOption: 1 }, // 7000*12 = 84000. الخسارة لا تخصم من المرتب.
+            { id: 38, question: "٣٨ - صافي خسائر المحل المورث له من أبيه:", options: ["أ - يخصم من المرتبات", "ب - يرحل للعام القادم ولا يخصم من المرتبات", "ج - يضاف على المرتبات", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 39, question: "٣٩ - صافي إيرادات الثورة العقارية (المباني المؤجرة قانون جديد أو مفروش) = الإيجار السنوي الفعلي - ...", options: ["أ - ٥٠٪ مقابل المصروفات", "ب - ٤٠٪ مقابل المصروفات", "ج - ٢٠٪ مقابل المصروفات", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 40, question: "٤٠ - من خصائص الضريبة على دخل الأشخاص الطبيعيين أنها ضريبة تعمل بنظام:", options: ["أ - الطبقات", "ب - الشرائح", "ج - السعر القطعي ٢٥٪", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 41, question: "٤١ - لا يجوز أداء الضريبة لمصلحة الضرائب في شكل خدمات:", options: ["أ - شخصية", "ب - عينية", "ج - أ & ب معا", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 42, question: "٤٢ - الأسهم التي تمنح للعاملين تخضع للضريبة بشرط أن تكون:", options: ["أ - بقيمة تساوي القيمة السوقية", "ب - بقيمة تقل عن القيمة السوقية", "ج - أ & ب معا", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 43, question: "٤٣ - حصل موظف على قرض ٤٠ ألف جنيه بفائدة ٤٪. حصل آخر ٦ شهور على ٥٠ ألف جنيه. الميزة العينية:", options: ["أ - ٣٠٠ جنيه", "ب - لا توجد ميزة خاضعة", "ج - ٤٠٠ جنيه", "د - لا شيء مما سبق"], correctOption: 1 }, // القرض أقل من المرتب 6 شهور
+            { id: 44, question: "٤٤ - أقساط التأمين التي يعقدها الموظف على حياته والتي تخصم تلقائياً من مرتبه كل شهر:", options: ["أ - ميزة عينية خاضعة للضريبة", "ب - لا توجد ميزة عينية خاضعة", "ج - تخصم في حدود 10%", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 45, question: "٤٥ - هناك اعفاء شخصي سنوي يمنح للموظفين عند حساب ضريبة المرتبات وهو:", options: ["أ - ١٢٥٠ ج", "ب - ٢٠٠٠٠ ج", "ج - ٢٥٠٠٠ ج", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 46, question: "٤٦ - ضريبة المرتبات هي ضريبة سنوية الحساب ولكن تخصم كل:", options: ["أ - شهر", "ب - ٦ شهور", "ج - ٣ شهور", "د - لا شيء مما سبق"], correctOption: 0 },
+            { id: 47, question: "٤٧ - التليفون المحمول للاستخدام الشخصي، الميزة العينية تحسب بنسبه من الفواتير:", options: ["أ - ١٠٪", "ب - ٢٠٪", "ج - ٣٠٪", "د - لا شيء مما سبق"], correctOption: 1 },
+            { id: 48, question: "٤٨ - ما يسمح للموظف بخصمه هو التأمين الذي يعقده على حياته لصالحه أو لصالح:", options: ["أ - أولاده القصر فقط", "ب - والدته فقط", "ج - زوجته واولاده القصر فقط", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 49, question: "٤٩ - اهلاك السيارة التي تمنح للموظف للاستخدام الشخصي:", options: ["أ - يدخل ضمن مصروفات تشغيل السيارة", "ب - يحسب بنسبة ٢٠٪", "ج - لا يدخل ضمن مصروفات تشغيل السيارة", "د - لا شيء مما سبق"], correctOption: 2 },
+            { id: 50, question: "٥٠ - يحصل الشخص الطبيعي في مصر عند تقديم الاقرار الضريبي على إعفاء سنوي على اجمالي دخله (الشريحة المعفاة) يبلغ:", options: ["أ - ٤٠٠٠٠ ج", "ب - ٢٥٠٠٠ ج", "ج - ١٠٠٠٠ ج", "د - لا شيء مما سبق"], correctOption: 0 }
+        ];
+
+        // --- 2. Essay Data (7 Questions EXACTLY matching PDF solutions) ---
+        const essayData = [
+            {
+                id: 1,
+                title: "تمرين (١)",
+                question: "ممول شخص طبيعي بلغت صافي ايراداته من أنشطته المختلفة عن عام ٢٠٢٥ مبلغ ٤٦٠,٠٠٠ جنيه.<br>المطلوب: الضريبة المستحقة علي الممول.",
+                solution: `
+                <table class="pdf-table">
+                    <tbody>
+                        <tr>
+                            <td class="col-text underline-title">الضريبة المستحقة</td>
+                            <td class="col-sub"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">معفاه</td>
+                            <td class="col-sub">٤٠٠٠٠</td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">١٥٠٠٠ × ١٠٪</td>
+                            <td class="col-sub">١٥٠٠</td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">١٥٠٠٠ × ١٥٪</td>
+                            <td class="col-sub">٢٢٥٠</td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">١٣٠٠٠٠ × ٢٠٪</td>
+                            <td class="col-sub">٢٦٠٠٠</td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">٢٠٠٠٠٠ × ٢٢.٥٪</td>
+                            <td class="col-sub">٤٥٠٠٠</td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">الباقي ٦٠٠٠٠ × ٢٥٪</td>
+                            <td class="col-sub">١٥٠٠٠</td>
+                        </tr>
+                        <tr class="border-top">
+                            <td class="col-text font-bold">الضريبة المستحقة علي الممول =</td>
+                            <td class="col-sub font-bold">٨٩٧٥٠ جنيه</td>
+                        </tr>
+                    </tbody>
+                </table>
+                `
+            },
+            {
+                id: 2,
+                title: "تمرين (٢)",
+                question: "السيد مصطفى الشاذلي ممول مقيم في مصر. عن عام ٢٠٢٣:<br>١- يعمل في إدارة الشئون القانونية.. الإيراد الخاضع ٤٠٠٠٠ ج. استقطع منه ٣٠٠ ج شهريا.<br>٢- يمتلك مكتب محاماة إيراداته ١٥٠٠٠٠ ج ومصروفاته ٤٠٠٠٠ ج. تقاضى ٤٠٠٠٠ ج عن قضية دولية.<br>٣- يمتلك ٤ وحدات، يسكن ٢، ويؤجر ٢ إيجار جديد بـ ٢٠٠٠ ج شهريا. يخصم ٥٠٪ للتكاليف.<br>المطلوب: تحديد وعاء الضريبة وحساب الضريبة المستحقة والواجبة السداد.",
+                solution: `
+                <table class="pdf-table">
+                    <tbody>
+                        <tr>
+                            <td class="col-text underline-title" colspan="2">الأوعية الخاضعة للضريبة</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">صافي المرتبات ومافي حكمها</td>
+                            <td class="col-sub">٤٠٠٠٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">صافي إيرادات المهن الحرة (١٥٠٠٠٠ + ٤٠٠٠٠ - ٤٠٠٠٠)</td>
+                            <td class="col-sub">١٥٠٠٠٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">صافي إيرادات الثروة العقارية (٢ × ٢٠٠٠ × ١٢ × ٥٠٪)</td>
+                            <td class="col-sub">٢٤٠٠٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr class="border-top">
+                            <td class="col-text">مجموع صافي الدخل الخاضع للضريبة = وعاء الضريبة</td>
+                            <td class="col-sub"></td>
+                            <td class="col-tot">٢١٤٠٠٠</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="pdf-table">
+                    <tbody>
+                        <tr>
+                            <td class="col-text underline-title" colspan="2">الضريبة المستحقة</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">٤٠٠٠٠ معفاه</td>
+                            <td class="col-sub">--</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">١٥٠٠٠ × ١٠٪</td>
+                            <td class="col-sub">١٥٠٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">١٥٠٠٠ × ١٥٪</td>
+                            <td class="col-sub">٢٢٥٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">١٣٠٠٠٠ × ٢٠٪</td>
+                            <td class="col-sub">٢٦٠٠٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">١٤٠٠٠ × ٢٢.٥٪</td>
+                            <td class="col-sub">٣١٥٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr class="border-top">
+                            <td class="col-text" colspan="2">الضريبة المستحقة علي الممول</td>
+                            <td class="col-tot">٣٢٩٠٠</td>
+                        </tr>
+                        <tr>
+                            <td class="col-text" colspan="2">(-) المستقطع تحت حساب ضريبة المرتبات (٣٠٠ × ١٢)</td>
+                            <td class="col-tot">(٣٦٠٠)</td>
+                        </tr>
+                        <tr class="border-top">
+                            <td class="col-text" colspan="2">الضريبة واجبة السداد</td>
+                            <td class="col-tot">٢٩٣٠٠</td>
+                        </tr>
+                    </tbody>
+                </table>
+                `
+            },
+            {
+                id: 3,
+                title: "تمرين (٣)",
+                question: "السيد سامح المصري مهندس مقيم في مصر. عن عام ٢٠٢٣:<br>١- صافي إيراد مكتبه الاستشاري ١٥٠٠٠٠ ج. نشاط التسويق العقاري صافي خسارة ٢٠٠٠٠٠ ج.<br>٢- مرتبات الخاضع منها ٦٠٠٠٠ ج.<br>المطلوب: تحديد وعاء الضريبة وحساب الضريبة.",
+                solution: `
+                <table class="pdf-table">
+                    <tbody>
+                        <tr>
+                            <td class="col-text underline-title" colspan="2">الأوعية الخاضعة للضريبة</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">صافي المرتبات وما في حكمها</td>
+                            <td class="col-sub">٦٠٠٠٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">صافي إيرادات المهن الحرة (مكتبه الاستشاري)</td>
+                            <td class="col-sub">١٥٠٠٠٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">صافي خسارة النشاط التجاري والصناعي (مكتب التسويق العقاري)</td>
+                            <td class="col-sub">(٢٠٠٠٠٠)</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text text-red-700 dark:text-red-400">الناتج خسارة ترحل للعام القادم ولا تخصم من المرتبات</td>
+                            <td class="col-sub">(٥٠٠٠٠)</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text"></td>
+                            <td class="col-sub">صفر</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr class="border-top">
+                            <td class="col-text">الضريبة المستحقة علي الممول (وعاء الضريبة)</td>
+                            <td class="col-sub"></td>
+                            <td class="col-tot">٦٠٠٠٠</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="pdf-table">
+                    <tbody>
+                        <tr>
+                            <td class="col-text underline-title" colspan="2">الضريبة المستحقة</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">٤٠٠٠٠ معفاة</td>
+                            <td class="col-sub">--</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">١٥٠٠٠ × ١٠٪</td>
+                            <td class="col-sub">١٥٠٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr>
+                            <td class="col-text">٥٠٠٠ × ١٥٪</td>
+                            <td class="col-sub">٧٥٠</td>
+                            <td class="col-tot"></td>
+                        </tr>
+                        <tr class="border-top">
+                            <td class="col-text" colspan="2">الضريبة المستحقة علي الممول</td>
+                            <td class="col-tot">٢٢٥٠</td>
+                        </tr>
+                    </tbody>
+                </table>
+                `
+            },
+            {
+                id: 4,
+                title: "تمرين (٤)",
+                question: "منحت احدى الشركات لأحد موظفيها سيارة لاستخدامه الشخصي بلغت قيمتها ٤٠٠٠٠٠. مصروفاتها: ٤٠٠٠٠ إهلاك، ٦٠٠٠٠ وقود وزيوت، ٣٠٠٠٠ تأمين، ١٠٠٠٠ صيانة دورية، ٥٠٠٠٠ عمرة للموتور.<br>المطلوب: حساب قيمة الميزة العينية السنوية الخاضعة للضريبة.",
+                solution: `
+                <div class="p-4 bg-white dark:bg-gray-800 border-2 border-black dark:border-gray-500 rounded-lg text-right font-semibold">
+                    <p class="mb-3 underline">الحل:</p>
+                    <p class="mb-3">مصروفات تشغيل السيارة خلال السنة = ٦٠٠٠٠ + ٣٠٠٠٠ + ١٠٠٠٠ = ١٠٠,٠٠٠</p>
+                    <p class="">اذن قيمة الميزة العينية السنوية الخاضعة للضريبة = ١٠٠,٠٠٠ × ٢٠٪ = ٢٠,٠٠٠</p>
+                </div>
+                `
+            },
+            {
+                id: 5,
+                title: "تمرين (٥)",
+                question: "منحت احدى الشركات لأحد موظفيها هاتف محمول لاستخدامه الشخصي بلغت قيمته ٦٠٠٠٠، قيمة فواتير التشغيل خلال السنة ٩٠٠٠٠.<br>المطلوب: حساب قيمة الميزة العينية الشهرية الخاضعة للضريبة.",
+                solution: `
+                <div class="p-4 bg-white dark:bg-gray-800 border-2 border-black dark:border-gray-500 rounded-lg text-right font-semibold">
+                    <p class="mb-3 underline">الحل:</p>
+                    <p class="mb-3">قيمة فواتير التشغيل خلال السنة = ٩٠,٠٠٠</p>
+                    <p class="mb-3">اذن قيمة الميزة العينية السنوية الخاضعة للضريبة = ٩٠,٠٠٠ × ٢٠٪ = ١٨,٠٠٠</p>
+                    <p class="">اذن قيمة الميزة العينية الشهرية الخاضعة للضريبة = ١٨,٠٠٠ ÷ ١٢ = ١,٥٠٠</p>
+                </div>
+                `
+            },
+            {
+                id: 6,
+                title: "تمرين (٦)",
+                question: "منحت احدى الشركات لأحد موظفيها ٢٠٠٠ سهم بقيمة ٢٠٠ جنيه للسهم. القيمة السوقية بداية السنة ٢٥٠، والقيمة السوقية تاريخ الشراء ٢٦٠، والقيمة الاسمية ١٥٠.<br>المطلوب: حساب قيمة الميزة العينية الخاضعة للضريبة.",
+                solution: `
+                <div class="p-4 bg-white dark:bg-gray-800 border-2 border-black dark:border-gray-500 rounded-lg text-right font-semibold">
+                    <p class="mb-3 underline">الحل:</p>
+                    <p class="">قيمة الميزة العينية = (٢٦٠ - ٢٠٠) × ٢٠٠٠ سهم = ١٢٠,٠٠٠ جنيه</p>
+                </div>
+                `
+            },
+            {
+                id: 7,
+                title: "تمرين (٧)",
+                question: "حصل أحد العاملين على قرض قيمته ٣٠٠,٠٠٠ جنيه بمعدل فائدة ٣٪. المبالغ خلال الستة أشهر الماضية: ٦٠٠٠٠ أجر أساسي، ٣٠٠٠٠ حوافز، ٤٠٠٠٠ مكافآت ومنح، ٧٠٠٠٠ بدلات وعلاوات.<br>المطلوب: حساب قيمة الميزة العينية الخاضعة للضريبة.",
+                solution: `
+                <div class="p-4 bg-white dark:bg-gray-800 border-2 border-black dark:border-gray-500 rounded-lg text-right font-semibold">
+                    <p class="mb-3 underline">الحل:</p>
+                    <p class="mb-3">إجمالي ما حصل عليه العامل خلال الستة أشهر الماضية = ٦٠٠٠٠ + ٣٠٠٠٠ + ٤٠٠٠٠ + ٧٠٠٠٠ = ٢٠٠,٠٠٠ جنيه</p>
+                    <p class="">قيمة الميزة العينية = (٣٠٠,٠٠٠ - ٢٠٠,٠٠٠) × (٧٪ - ٣٪) = ١٠٠,٠٠٠ × ٤٪ = ٤,٠٠٠ جنيه</p>
+                </div>
+                `
+            }
+        ];
+
+        // --- 3. Laws Reference Data (مرجع القوانين الشامل من المحاضرات) ---
+        const lawsData = [
+            {
+                title: "١. الضرائب المباشرة والغير مباشرة",
+                icon: "fa-code-branch",
+                rule: "الضرائب المباشرة: مثل الضريبة على دخل الشخص الطبيعي والاعتباري والضريبة العقارية. الضرائب غير المباشرة: مثل ضريبة القيمة المضافة والدمغة والضريبة الجمركية.",
+                example: "سؤال: هل ضريبة المرتبات ضريبة مباشرة أم غير مباشرة؟ الحل: مباشرة لأنها تفرض على الدخل ولا يمكن نقل عبئها."
+            },
+            {
+                title: "٢. الإقامة الضريبية للشخص الطبيعي",
+                icon: "fa-earth-africa",
+                rule: "يعتبر مقيماً في مصر إذا توافر أحد الشروط: ١) له موطن دائم في مصر. ٢) قضى أكثر من 183 يوماً متصلة أو منفصلة خلال السنة. ٣) مصري يؤدي مهام وظيفته بالخارج ويحصل على دخله من خزانة مصرية.",
+                example: "سفير مصري يعمل في أمريكا ويقبض راتبه من الحكومة. الحل: يخضع للضريبة لأنه مقيم حكماً ويقبض من خزانة مصرية."
+            },
+            {
+                title: "٣. نطاق سريان الضريبة (مبدأ التبعية)",
+                icon: "fa-map-location-dot",
+                rule: "المقيم في مصر يخضع لدخله المحقق داخل وخارج مصر (إذا كان المركز الرئيسي لعمله بمصر). غير المقيم يخضع فقط لدخله المحقق داخل مصر.",
+                example: "أجنبي غير مقيم بمصر أسس مشروعاً بمصر وحقق ربحاً. الحل: يخضع دخله المحقق داخل مصر فقط."
+            },
+            {
+                title: "٤. خصائص الضريبة على دخل الأشخاص الطبيعيين",
+                icon: "fa-list-check",
+                rule: "هي ضريبة: ١) مباشرة. ٢) موحدة (بإقرار واحد). ٣) شخصية (تراعي الظروف العائلية عبر الإعفاءات). ٤) سنوية. ٥) تصاعدية بنظام الشرائح.",
+                example: "إذا سُئلت في الاختياري: هل هي ضريبة عينية أم شخصية؟ الحل: شخصية وتصاعدية وموحدة ومباشرة وسنوية."
+            },
+            {
+                title: "٥. شرائح الضريبة السنوية (أقل من 600 ألف)",
+                icon: "fa-chart-pie",
+                rule: "أول 40,000 ج: 0% (معفاة). الـ 15,000 التالية: 10%. الـ 15,000 التالية: 15%. الـ 130,000 التالية: 20%. الـ 200,000 التالية: 22.5%. ما يزيد: 25%. ويقرب وعاء الضريبة لأقرب 10 جنيهات أقل.",
+                example: "وعاء الضريبة 50,000. الحل: أول 40 ألف معفاة، يتبقى 10 آلاف × 10% = 1000 جنيه ضريبة."
+            },
+            {
+                title: "٦. قاعدة مقاصة وتجميع الخسائر",
+                icon: "fa-calculator",
+                rule: "تُجمع إيرادات المهن الحرة والتجاري والثروة العقارية لعمل مقاصة بينها. خسائر النشاط التجاري أو المهني تخصم من الأنشطة الأخرى (عدا المرتبات). الخسارة المتبقية تُرحّل لـ 5 سنوات أقصى حد.",
+                example: "مرتبات 60 ألف، مهن حرة 150 ألف، خسارة تجارية 200 ألف. الحل: تقاص الخسارة مع المهن الحرة يتبقى 50 ألف خسارة ترحل. المرتبات (60 ألف) تخضع للضريبة دون المساس بها."
+            },
+            {
+                title: "٧. الإعفاء من تقديم الإقرار الضريبي",
+                icon: "fa-file-circle-xmark",
+                rule: "لا يلتزم بتقديم الإقرار من اقتصر دخله على: المرتبات فقط، أو الثروة العقارية (أقل من 40 ألف)، أو هما معاً ولا يتجاوزان 40 ألف جنيه (الشريحة المعفاة).",
+                example: "موظف ليس لديه سوى مرتبه الشهري. الحل: لا يلتزم بتقديم الإقرار الضريبي لأن دخله يقتصر على المرتبات."
+            },
+            {
+                title: "٨. مرتبات ومكافآت مجالس الإدارة",
+                icon: "fa-user-tie",
+                rule: "القطاع العام: تخضع للضريبة إذا دُفعت لغير المساهمين، وتعفى إذا دُفعت للمساهمين (توزيع ربح). القطاع الخاص (أموال): تخضع إذا كانت نظير العمل الإداري، وتعفى إذا لم تكن للعمل الإداري.",
+                example: "عضو منتدب بشركة خاصة يتقاضى مرتباً للعمل الإداري. الحل: يخضع لضريبة المرتبات لأنه مقابل عمل إداري."
+            },
+            {
+                title: "٩. الميزة العينية: السيارة",
+                icon: "fa-car",
+                rule: "تحسب الميزة بنسبة 20% من مصروفات تشغيل السيارة (وقود، زيوت، صيانة دورية، تأمين). لا يدخل الإهلاك أو الإصلاحات الكبيرة (حوادث، عمرة موتور) ضمن التشغيل.",
+                example: "سيارة مصروفاتها: إهلاك 6000، وقود وصيانة 1250، تأمين 250، حوادث 8000. الحل: (1250+250) × 20% = 300 جنيه شهرياً."
+            },
+            {
+                title: "١٠. الميزة العينية: التليفون المحمول",
+                icon: "fa-mobile-screen",
+                rule: "تحسب الميزة العينية بنسبة 20% من قيمة فواتير التشغيل التي تتحملها جهة العمل. ثمن التليفون نفسه يُهمل تماماً.",
+                example: "محمول ثمنه 30 ألف جنيه، وفاتورته 125 جنيه شهرياً. الحل: 125 × 20% = 25 جنيه ميزة شهرية."
+            },
+            {
+                title: "١١. الميزة العينية: القروض والسلفيات",
+                icon: "fa-hand-holding-dollar",
+                rule: "شروط الخضوع معاً: 1) مبلغ القرض أكبر من راتب آخر 6 أشهر. 2) فائدة القرض أقل من 7%. الميزة = (الزيادة في القرض) × (7% - نسبة الفائدة).",
+                example: "قرض 40 ألف بفائدة 4%. راتب آخر 6 أشهر 50 ألف. الحل: لا توجد ميزة لأن القرض (40) أقل من الراتب (50)."
+            },
+            {
+                title: "١٢. الميزة العينية: الأسهم الممنوحة للعاملين",
+                icon: "fa-arrow-trend-up",
+                rule: "تخضع الأسهم للضريبة إذا مُنحت للعامل بقيمة أقل من قيمتها السوقية وقت نقل الملكية. الميزة = (السعر السوقي وقت الشراء - المبلغ المدفوع) × عدد الأسهم.",
+                example: "1000 سهم دُفع فيها 200 ج للسهم. السعر السوقي يوم النقل 220 ج. الحل: (220 - 200) × 1000 = 20,000 ج."
+            },
+            {
+                title: "١٣. الميزة العينية: وثائق التأمين الممنوحة",
+                icon: "fa-shield",
+                rule: "تقاس الميزة بمقدار ما تتحمله الشركة من أقساط نيابة عن الموظف (دون استقطاعها من راتبه).",
+                example: "تأمين يتحمله الموظف 200ج وتتحمله الشركة 300ج نيابة عنه. الحل: الميزة العينية الخاضعة = 300ج."
+            },
+            {
+                title: "١٤. المزايا العينية الجماعية (المعفاة)",
+                icon: "fa-users-viewfinder",
+                rule: "جميع المزايا العينية الجماعية معفاة: الوجبة في مقر العمل، النقل الجماعي، السكن المقدم لأداء العمل، الرعاية الصحية الجماعية، الملابس والأدوات اللازمة للعمل.",
+                example: "سكن يوفره صاحب العمل بدون مقابل لمجموعة موظفين. الحل: معفى لأنه ميزة جماعية أو سكن لأداء العمل."
+            },
+            {
+                title: "١٥. الإعفاء الشخصي للموظفين",
+                icon: "fa-user-shield",
+                rule: "يمنح الموظف إعفاء شخصي قدره 20,000 جنيه سنوياً (أو 1667 جنيه شهرياً) تُخصم عند حساب وعاء المرتبات.",
+                example: "موظف يحدد وعاءه الشهري. يتم خصم 1667 جنيه إعفاء شخصي قبل استكمال الاستقطاعات."
+            },
+            {
+                title: "١٦. خصم التأمين الاجتماعي",
+                icon: "fa-money-bill-transfer",
+                rule: "حصة الموظف في التأمين الاجتماعي تُخصم بالكامل من الوعاء الضريبي، بينما حصة صاحب العمل لا علاقة لها بالموظف.",
+                example: "موظف يستقطع منه 333 ج تأمين اجتماعي شهرياً. الحل: تخصم الـ 333 ج للوصول لصافي الإيراد المؤقت."
+            },
+            {
+                title: "١٧. خصم أقساط التأمين على الحياة وصناديق الزمالة",
+                icon: "fa-heart-pulse",
+                rule: "يُخصم التأمين على حياة الممول (لصالحه، زوجته، أولاده القصر) واشتراكات صناديق الزمالة بحد أقصى: 15% من صافي الإيراد المؤقت أو 10000 ج سنوياً (833.3 شهرياً) أو المدفوع، أيهم أقل.",
+                example: "دفع 1000ج شهرياً. الحد الأقصى 833.3، و15% = 1095. الحل: يخصم الأقل وهو 833.3 ج."
+            },
+            {
+                title: "١٨. العلاوات والبدلات في قانون الخدمة المدنية",
+                icon: "fa-landmark",
+                rule: "كل العلاوات (خاصة، اجتماعية، إضافية) والبدلات تعتبر خاضعة للضريبة ما لم ينص صراحة على إعفائها في التمرين أو بقانون خاص.",
+                example: "حصل على بدلات وعلاوات ولم يذكر أنها معفاة. الحل: تُدرج جميعها ضمن الأجر الخاضع للضريبة."
+            },
+            {
+                title: "١٩. الضريبة على المبالغ العارضة (المكافآت التشجيعية)",
+                icon: "fa-gift",
+                rule: "الطريقة المختصرة: تُحسب الضريبة بمعرفة آخر شريحة وصل إليها راتب الموظف. إذا كانت تستوعب المكافأة، تضرب المكافأة في نسبة الشريحة. وإلا، تجزأ على الشرائح.",
+                example: "مكافأة 15 ألف. الراتب وصل لشريحة 20% وتستوعبها. الحل: الضريبة = 15,000 × 20% = 3000 جنيه."
+            },
+            {
+                title: "٢٠. الضريبة على مكافأة الانتداب",
+                icon: "fa-briefcase",
+                rule: "المنتدب لجهة غير جهة عمله الأصلية تخضع مكافأته لضريبة قطعية 10% دون أي خصومات. إذا تحملتها الشركة تُحسب (الصافي × 10 / 90).",
+                example: "دكتور جامعي انتدب لمعهد مقابل 4500 ج. الحل: 4500 × 10% = 450 جنيه ضريبة مقطوعة."
+            },
+            {
+                title: "٢١. المعاشات ومكافأة ترك الخدمة",
+                icon: "fa-person-cane",
+                rule: "المعاشات ومكافأة ترك الخدمة ومقابل الأجازات غير خاضعة للضريبة نهائياً (معفاة بقوة القانون).",
+                example: "موظف خرج للمعاش وتقاضى مكافأة نهاية خدمة. الحل: لا تخضع للضريبة على الإطلاق."
+            },
+            {
+                title: "٢٢. كشف التسوية في نهاية العام",
+                icon: "fa-file-invoice",
+                rule: "يُعد من قِبل جهة العمل في يناير لتحديد الفروق بين المستقطع والمستحق الفعلي. يضم فقط المبالغ السنوية الفعلية من داخل الشركة ويهمل عمليات خارجية أو عائلية.",
+                example: "وجد فروق لتقريب شهري زائد. الحل: التسوية تحدد الضريبة الفعلية ويرد الفرق للممول أو يخصم منه."
+            }
+        ];
+
+        // --- State Management ---
+        let currentScore = 0;
+        let answeredQuestions = {};
+        
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            renderMCQs();
+            renderEssays();
+            renderLaws();
+        });
+
+        // --- Dark Mode Logic ---
+        function initTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            
+            // Default to Light, or use localStorage if set
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-sun text-lg';
+            } else {
+                html.classList.remove('dark');
+                icon.className = 'fa-solid fa-moon text-lg';
+            }
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.theme = 'light';
+                icon.className = 'fa-solid fa-moon text-lg';
+            } else {
+                html.classList.add('dark');
+                localStorage.theme = 'dark';
+                icon.className = 'fa-solid fa-sun text-lg';
+            }
+        }
+
+        // --- Tab Logic ---
+        function switchTab(tabId) {
+            const sections = ['mcq', 'essay', 'laws'];
+            sections.forEach(id => {
+                document.getElementById(`${id}-section`).classList.add('hidden');
+                document.getElementById(`${id}-section`).classList.remove('block');
+                
+                // Reset Tab Styles
+                const tab = document.getElementById(`tab-${id}`);
+                tab.className = "flex-1 py-2 px-4 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 font-bold smooth-transition text-sm sm:text-base";
+            });
+
+            // Activate chosen tab
+            document.getElementById(`${tabId}-section`).classList.remove('hidden');
+            document.getElementById(`${tabId}-section`).classList.add('block');
+            
+            const activeTab = document.getElementById(`tab-${tabId}`);
+            activeTab.className = "flex-1 py-2 px-4 rounded-lg bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 font-bold smooth-transition text-sm sm:text-base shadow-sm";
+        }
+
+        // --- Render MCQs ---
+        function renderMCQs() {
+            const container = document.getElementById('mcq-container');
+            container.innerHTML = '';
+
+            mcqData.forEach(mcq => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 relative";
+                
+                let optionsHtml = '';
+                mcq.options.forEach((opt, optIdx) => {
+                    optionsHtml += `
+                        <div id="opt-${mcq.id}-${optIdx}" 
+                             onclick="handleAnswer(${mcq.id}, ${optIdx}, ${mcq.correctOption})"
+                             class="p-3 mb-2 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 smooth-transition text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300">
+                            ${opt}
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="mb-4">
+                        <h3 class="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-100 leading-snug">${mcq.question}</h3>
+                    </div>
+                    <div class="options-container space-y-2">
+                        ${optionsHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function handleAnswer(qId, selectedIdx, correctIdx) {
+            if (answeredQuestions[qId]) return;
+            answeredQuestions[qId] = true;
+
+            const isCorrect = (selectedIdx === correctIdx);
+            const questionData = mcqData.find(q => q.id === qId);
+            
+            const selectedElement = document.getElementById(`opt-${qId}-${selectedIdx}`);
+            const correctElement = document.getElementById(`opt-${qId}-${correctIdx}`);
+
+            // Disable all options visually
+            for(let i=0; i<questionData.options.length; i++) {
+                const opt = document.getElementById(`opt-${qId}-${i}`);
+                opt.classList.remove('cursor-pointer', 'hover:bg-gray-50', 'dark:hover:bg-gray-700');
+                opt.classList.add('cursor-not-allowed', 'opacity-60');
+            }
+
+            if (isCorrect) {
+                selectedElement.classList.replace('border-gray-300', 'border-green-500');
+                selectedElement.classList.replace('dark:border-gray-600', 'border-green-500');
+                selectedElement.classList.add('bg-green-100', 'dark:bg-green-900/50', 'text-green-800', 'dark:text-green-200');
+                selectedElement.innerHTML += ' <i class="fa-solid fa-circle-check float-left mt-1 text-green-600 dark:text-green-400"></i>';
+                
+                currentScore++;
+                document.getElementById('score-display').textContent = currentScore;
+            } else {
+                selectedElement.classList.replace('border-gray-300', 'border-red-500');
+                selectedElement.classList.replace('dark:border-gray-600', 'border-red-500');
+                selectedElement.classList.add('bg-red-100', 'dark:bg-red-900/50', 'text-red-800', 'dark:text-red-200');
+                selectedElement.innerHTML += ' <i class="fa-solid fa-circle-xmark float-left mt-1 text-red-600 dark:text-red-400"></i>';
+
+                correctElement.classList.replace('border-gray-300', 'border-green-500');
+                correctElement.classList.replace('dark:border-gray-600', 'border-green-500');
+                correctElement.classList.add('bg-green-50', 'dark:bg-green-900/30', 'text-green-800', 'dark:text-green-200', 'border-2');
+                correctElement.innerHTML += ' <i class="fa-solid fa-check float-left mt-1 text-green-600 dark:text-green-400"></i>';
+            }
+        }
+
+        // --- Render Essays ---
+        function renderEssays() {
+            const container = document.getElementById('essay-container');
+            container.innerHTML = '';
+
+            essayData.forEach(essay => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-gray-800 p-5 sm:p-8 rounded-xl shadow-md border-t-4 border-indigo-500 relative";
+                
+                card.innerHTML = `
+                    <h3 class="text-lg sm:text-xl font-extrabold text-indigo-900 dark:text-indigo-300 mb-3">${essay.title}</h3>
+                    <p class="text-sm sm:text-base text-gray-800 dark:text-gray-200 font-semibold mb-6 leading-relaxed">${essay.question}</p>
+                    
+                    <button onclick="toggleSolution('sol-${essay.id}')" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg smooth-transition shadow-sm">
+                        <i class="fa-solid fa-eye ml-2"></i>أظهر الحل
+                    </button>
+
+                    <div id="sol-${essay.id}" class="hidden mt-6 smooth-transition overflow-x-auto">
+                        <div class="min-w-full">
+                            ${essay.solution}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleSolution(solId) {
+            const solDiv = document.getElementById(solId);
+            solDiv.classList.toggle('hidden');
+        }
+
+        // --- Render Laws (مرجع القوانين) ---
+        function renderLaws() {
+            const container = document.getElementById('laws-container');
+            container.innerHTML = '';
+
+            lawsData.forEach(law => {
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-full";
+                
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 mb-4 border-b border-gray-100 dark:border-gray-700 pb-3">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 w-10 h-10 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300">
+                            <i class="fa-solid ${law.icon} text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">${law.title}</h3>
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-sm text-indigo-700 dark:text-indigo-400 mb-1">نص القاعدة/القانون:</h4>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">${law.rule}</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700 mt-auto">
+                        <h4 class="font-bold text-sm text-emerald-700 dark:text-emerald-400 mb-1"><i class="fa-solid fa-lightbulb"></i> مثال تطبيقي:</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">${law.example}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- Supplication (Prayers) Logic ---
+        const prayersList = [
+            "اللهم اجعلنا من الناجحين والمتفوقين",
+            "اللهم اجعلنا من المتميزين في دراستنا وحياتنا",
+            "يا رب اكتب لنا الامتياز والنجاح الباهر",
+            "اللهم ارزقنا فهم النبيين وحفظ المرسلين وإلهام الملائكة المقربين",
+            "اللهم افتح علينا فتوح العارفين بحكمتك",
+            "يا رب ارزقنا التوفيق والسداد في كل خطوة",
+            "اللهم سخر لنا كل عسير، ويسر لنا كل صعب",
+            "اللهم بارك لنا في وقتنا وعلمنا وعملنا",
+            "يا رب نسألك التوفيق والنجاح والفلاح في الدنيا والآخرة",
+            "اللهم اجعل تعبنا في ميزان حسناتنا وارزقنا فرحة النجاح",
+            "اللهم ارزقنا الصبر على المذاكرة وقوة الحفظ وسرعة الفهم",
+            "اللهم لا سهل إلا ما جعلته سهلاً وأنت تجعل الحزن إذا شئت سهلاً",
+            "يا رب بشرنا بما ننتظره وأنت خير المبشرين",
+            "اللهم نور بصائرنا وارزقنا سداد الإجابة والتوفيق في الامتحان",
+            "اللهم اجعل ثمرة جهدنا تفوقاً ونجاحاً يثلج صدورنا"
+        ];
+
+        function showPrayerModal() {
+            const modal = document.getElementById('prayer-modal');
+            const textElement = document.getElementById('prayer-text');
+            
+            // Pick a random prayer
+            const randomPrayer = prayersList[Math.floor(Math.random() * prayersList.length)];
+            textElement.textContent = randomPrayer;
+            
+            // Show modal with animation
+            modal.classList.remove('hidden');
+            
+            // Trigger reflow to ensure transition works
+            void modal.offsetWidth;
+            
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+            modal.firstElementChild.classList.remove('scale-95');
+            modal.firstElementChild.classList.add('scale-100');
+        }
+
+        function closePrayerModal() {
+            const modal = document.getElementById('prayer-modal');
+            
+            // Hide modal with animation
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            modal.firstElementChild.classList.remove('scale-100');
+            modal.firstElementChild.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Show a prayer every 5 minutes (300,000 milliseconds)
+        setInterval(showPrayerModal, 300000);
+        
+    </script>
+</body>
+</html>
